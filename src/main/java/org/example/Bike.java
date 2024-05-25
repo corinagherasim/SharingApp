@@ -8,11 +8,11 @@ public class Bike {
     private User borrower;
     private User reserver;
 
-    public Bike(int id, String model, Availability availability, BikeCategory category){
+    public Bike(int id, String model, BikeCategory category){
         this.id = id;
         this.model = model;
+        this.category = category;
         this.availability = Availability.AVAILABLE;
-        this.category = BikeCategory.MAN;
     }
 
     public int getId() {return id;}
