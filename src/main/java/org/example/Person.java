@@ -1,6 +1,6 @@
 package org.example;
 
-public class Person {
+public abstract class Person {
     private int id;
     private String name;
     private String email;
@@ -25,4 +25,7 @@ public class Person {
     public void setId(int id) {this.id = id;}
     public String getRole() {return role;}
     public void setRole(String role) {this.role = role;}
+
+    public abstract boolean validateEmail(String email);
+
 }
