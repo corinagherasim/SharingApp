@@ -1,4 +1,4 @@
-package org.example;
+package model;
 
 public class Admin extends Person{
 
@@ -8,6 +8,7 @@ public class Admin extends Person{
 
     @Override
     public boolean validateEmail(String email) {
-        return email.matches("^[a-zA-Z0-9+_.-]+@shop\\\\.com$");
+
+        return email.matches("^[a-zA-Z0-9+_.-]+@shop\\.com$");
     }
 }

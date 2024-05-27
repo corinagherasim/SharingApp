@@ -1,4 +1,4 @@
-package org.example;
+package model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,7 @@ public class User extends Person {
 
     @Override
     public boolean validateEmail(String email) {
+
         return email.matches("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$");
     }
 

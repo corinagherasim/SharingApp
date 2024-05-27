@@ -1,16 +1,22 @@
-package org.example;
-import java.io.*;
+package model;
+
+import dao.BikeDAO;
+import dao.PersonDAO;
+import dao.TransactionDAO;
+import exceptions.BikeNotFoundException;
+
 import java.util.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-public class Shop implements Rentable{
+public class Shop implements Rentable, Searchable{
     private Map<BikeCategory, Section> sections; // Map of section name to Section object
     private List<Bike> bikes; // List of all bikes in the shop
     private Map<Bike, LocalDate> borrowedBikes;
     private List<User> users;
     private List<Admin> admins;
     private List<Person> people;
+    private TransactionDAO transactionDAO;
 
     //    Singleton
     private static final Shop shop = new Shop();
@@ -19,16 +25,83 @@ public class Shop implements Rentable{
         return shop;
     }
 
-    private Shop() {
+    Shop() {
         this.sections = new HashMap<>();
         this.bikes = new ArrayList<>();
         this.users = new ArrayList<>();
         this.admins = new ArrayList<>();
         this.people = new ArrayList<>();
         this.borrowedBikes = new HashMap<>();
+        this.transactionDAO = new TransactionDAO();
     }
 
     public Map<BikeCategory, Section> getSections() {return sections;}
+
+    public void addBikesFromDatabase() {
+        // Fetch bikes from the database using BikeDAO
+        BikeDAO bikeDAO = new BikeDAO();
+        List<Bike> bikes = bikeDAO.getBikesFromDB();
+
+        // Add fetched bikes to the shop
+        for (Bike bike : bikes) {
+            addBikeFromDatabase(bike);
+        }
+    }
+
+    private void addBikeFromDatabase(Bike bike) {
+        // Get the category of the bike
+        BikeCategory category = bike.getCategory();
+        // Get or create the section corresponding to the bike's category
+        Section section = sections.getOrDefault(category, new Section());
+        section.addBike(bike);
+        sections.put(category, section);
+        bikes.add(bike);
+    }
+
+    public void addPeopleFromDatabase() {
+        // Fetch bikes from the database using BikeDAO
+        PersonDAO personDAO = new PersonDAO();
+        List<Person> people = personDAO.getPeopleFromDB();
+
+        // Add fetched bikes to the shop
+        for (Person person : people) {
+            addPersonFromDB(person);
+        }
+    }
+
+    public void addPersonFromDB(Person person) {
+        if (person instanceof Admin) {
+            admins.add((Admin) person);
+        } else if (person instanceof User) {
+            users.add((User) person);
+        }
+        people.add(person); // Add to the general list of people
+    }
+
+    public void addPerson(Person person) {
+        PersonDAO personDAO = new PersonDAO();
+        if (person instanceof Admin) {
+            if(person.validateEmail(person.getEmail())){
+                admins.add((Admin) person);
+                people.add(person);
+                personDAO.addUserToDB(person);
+            } else{
+                System.out.println("Invalid email");
+            }
+
+        } else if (person instanceof User) {
+            if(person.validateEmail(person.getEmail())){
+                users.add((User) person);
+                people.add(person);
+                personDAO.addUserToDB(person);
+            } else{
+                System.out.println("Invalid email");
+            }
+        }
+
+
+    }
+
 
     // Method to add a bike (only accessible by admin)
     public void addBike(Admin admin, Bike bike) {
@@ -38,6 +111,8 @@ public class Shop implements Rentable{
             Section section = sections.getOrDefault(category, new Section());
             section.addBike(bike);
             sections.put(category, section);
+            BikeDAO bikeDAO = new BikeDAO();
+            bikeDAO.addBikeToDB(bike);
             System.out.println("Bike added by admin: " + bike.getModel());
         } else {
             System.out.println("Only an admin can add bikes.");
@@ -75,24 +150,16 @@ public class Shop implements Rentable{
         return admins.contains(admin);
     }
 
-    public void addAdmin(Admin admin) {
-        admins.add(admin);
-    }
-
-    public void addUser(User user) {
-        users.add(user);
-    }
-
-    public void displayAllUsers(Admin admin) {
-        if (isAdmin(admin)) {
+    public void displayAllPeople(Admin adminControl) {
+        if (isAdmin(adminControl)) {
             System.out.println("All Users:");
             for (User user : users) {
                 System.out.println(user.getName());
             }
 
             System.out.println("All Admins:");
-            for (User user : users) {
-                System.out.println(user.getName());
+            for (Admin admin : admins) {
+                System.out.println(admin.getName());
             }
         } else {
             System.out.println("Only an admin can view users and admins.");
@@ -241,6 +308,77 @@ public class Shop implements Rentable{
         return reservationSuccessful;
     }
 
+    public void processTransactionsFromDatabase() {
+        TransactionDAO transactionDAO = new TransactionDAO();
+        List<Transaction> transactions = transactionDAO.getAllTransactions();
+
+        for (Transaction transaction : transactions) {
+            switch (transaction.getAction()) {
+                case 1:
+                    Bike borrowedBike = searchBikeById(transaction.getBikeId());
+                    User borrower = searchUserById(transaction.getPersonId());
+                    if (borrowedBike != null && borrower != null) {
+                        borrowBike(borrowedBike, borrower, transaction.getDate());
+                    } else {
+                        System.out.println("Bike or user not found in the shop.");
+                    }
+                    break;
+                case 0:
+                    Bike returnedBike = searchBikeById(transaction.getBikeId());
+                    if (returnedBike != null) {
+                        returnBike(returnedBike);
+                    } else {
+                        System.out.println("Bike not found in the shop.");
+                    }
+                    break;
+                case 2:
+                    Bike reservedBike = searchBikeById(transaction.getBikeId());
+                    User reserver = searchUserById(transaction.getPersonId());
+                    if (reservedBike != null && reserver != null) {
+                        reserveBike(reservedBike, reserver, transaction.getDate());
+                    } else {
+                        System.out.println("Bike or user not found in the shop.");
+                    }
+                    break;
+                default:
+                    System.out.println("Invalid action in transaction.");
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public Bike searchBikeById(int id){
+        Bike foundBike = null;
+        for (Bike bike : bikes) {
+            if (bike.getId() == id) {
+                foundBike = bike;
+            }
+        }
+        return foundBike;
+    }
+
+    @Override
+    public Bike searchBikeByModel(String model){
+        Bike foundBike = null;
+        for (Bike bike : bikes) {
+            if (bike.getModel().equalsIgnoreCase(model)) {
+                foundBike = bike;
+            }
+        }
+        return foundBike;
+    }
+
+    @Override
+    public User searchUserById(int id){
+        User foundUser = null;
+        for (User user : users) {
+            if (user.getId() == id) {
+                foundUser = user;
+            }
+        }
+        return foundUser;
+    }
 }
 
 

@@ -1,6 +1,6 @@
-package org.example;
+package model;
 
-public abstract class Person {
+public class Person {
     private int id;
     private String name;
     private String email;
@@ -26,6 +26,19 @@ public abstract class Person {
     public String getRole() {return role;}
     public void setRole(String role) {this.role = role;}
 
-    public abstract boolean validateEmail(String email);
+    public boolean validateEmail(String email) {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Bike{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email=" + email +
+                ", password=" + password +
+                ", role=" + role +
+                '}';
+    }
 
 }

@@ -1,4 +1,4 @@
-package org.example;
+package model;
 
 import java.time.LocalDate;
 
@@ -12,11 +12,11 @@ public class Bike {
     private LocalDate reservationDate;
     private LocalDate borrowDate;
 
-    public Bike(int id, String model, BikeCategory category){
+    public Bike(int id, String model, BikeCategory category, Availability availability){
         this.id = id;
         this.model = model;
         this.category = category;
-        this.availability = Availability.AVAILABLE;
+        this.availability = availability;
     }
 
     public int getId() {return id;}
@@ -35,5 +35,14 @@ public class Bike {
     public void setReservationDate(LocalDate reservationDate) {this.reservationDate = reservationDate;}
     public LocalDate getBorrowDate() {return borrowDate;}
     public void setBorrowDate(LocalDate borrowDate) {this.borrowDate = borrowDate;}
+    @Override
+    public String toString() {
+        return "Bike{" +
+                "id=" + id +
+                ", model='" + model + '\'' +
+                ", category=" + category +
+                ", availability=" + availability +
+                '}';
+    }
 }
 

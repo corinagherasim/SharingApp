@@ -1,7 +1,7 @@
-package org.example;
+package model;
 
 public enum BikeCategory {
     MAN,
     WOMAN,
-    KIDS
+    KID
 }
