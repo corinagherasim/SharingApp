@@ -3,6 +3,7 @@ package model;
 import dao.BikeDAO;
 import dao.PersonDAO;
 import ui.AdminMenu;
+import ui.UserMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -83,7 +84,7 @@ public class Main extends JFrame {
             } else {
                 User user = shop.searchUserByEmailPassword(email, password);
                 if (user != null) {
-                    showUserMenu(user);
+                    new UserMenu(shop, user).setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(this, "Invalid email or password");
                 }
@@ -135,14 +136,6 @@ public class Main extends JFrame {
             }
 
         }
-    }
-
-    private void showAdminMenu(Admin admin) {
-        JOptionPane.showMessageDialog(this, "Welcome Admin: " + admin.getName());
-    }
-
-    private void showUserMenu(User user) {
-        JOptionPane.showMessageDialog(this, "Welcome User: " + user.getName());
     }
 
     public static void main(String[] args) {

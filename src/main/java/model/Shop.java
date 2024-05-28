@@ -16,7 +16,6 @@ public class Shop implements Rentable, Searchable{
     private List<User> users;
     private List<Admin> admins;
     private List<Person> people;
-    private TransactionDAO transactionDAO;
 
     //    Singleton
     private static final Shop shop = new Shop();
@@ -32,7 +31,6 @@ public class Shop implements Rentable, Searchable{
         this.admins = new ArrayList<>();
         this.people = new ArrayList<>();
         this.borrowedBikes = new HashMap<>();
-        this.transactionDAO = new TransactionDAO();
     }
 
     public Map<BikeCategory, Section> getSections() {return sections;}
@@ -233,7 +231,7 @@ public class Shop implements Rentable, Searchable{
 
     @Override
     // Method to borrow a bike
-    public boolean borrowBike(Bike bike, User borrower, LocalDate borrowDate) {
+    public boolean borrowBike(Bike bike, User borrower, LocalDate borrowDate, boolean firstTime) {
         boolean borrowedSuccessfully = false;
         if (bike.getAvailability() == Availability.AVAILABLE) {
             bike.setAvailability(Availability.BORROWED);
@@ -254,7 +252,7 @@ public class Shop implements Rentable, Searchable{
                 System.out.println("Bike '" + bike.getModel() + "' borrowed by " + borrower.getName() + " on " + borrowDate);
             } else {
                 LocalDate reservationDate = bike.getReservationDate();
-                if (ChronoUnit.DAYS.between(reservationDate, LocalDate.now()) > 30) {
+                if (ChronoUnit.DAYS.between(reservationDate, LocalDate.now()) > 7) {
                     bike.setAvailability(Availability.BORROWED);
                     bike.setBorrower(borrower);
                     bike.setBorrowDate(borrowDate);
@@ -269,12 +267,18 @@ public class Shop implements Rentable, Searchable{
         } else {
             System.out.println("Bike '" + bike.getModel() + "' is not available for borrowing by " + borrower.getName() + ".");
         }
+        if(borrowedSuccessfully){
+            if (!firstTime){
+                TransactionDAO transactionDAO = new TransactionDAO();
+                transactionDAO.addTransaction(1, bike.getId(), borrower.getId(), LocalDate.now());
+            }
+        }
         return borrowedSuccessfully;
     }
 
     @Override
     // Return a bike
-    public void returnBike(Bike bike) {
+    public void returnBike(Bike bike, boolean firstTime) {
         if (bike.getAvailability() == Availability.BORROWED) {
             bike.setAvailability(Availability.AVAILABLE);
             User borrower = bike.getBorrower();
@@ -284,6 +288,10 @@ public class Shop implements Rentable, Searchable{
                 System.out.println("Error: The bike has no associated borrower.");
             }
             borrowedBikes.remove(bike);
+            if (!firstTime){
+                TransactionDAO transactionDAO = new TransactionDAO();
+                transactionDAO.addTransaction(0, bike.getId(), borrower.getId(), LocalDate.now());
+            }
             System.out.println("Bike '" + bike.getModel() + "' has been returned.");
         } else {
             System.out.println("This bike is not borrowed and cannot be returned.");
@@ -292,7 +300,7 @@ public class Shop implements Rentable, Searchable{
 
     @Override
     // Reserve a bike
-    public boolean reserveBike(Bike bike, User user, LocalDate reserveDate) {
+    public boolean reserveBike(Bike bike, User user, LocalDate reserveDate, boolean firstTime) {
         boolean reservationSuccessful = false;
         if (bike.getAvailability() == Availability.AVAILABLE) {
             bike.setAvailability(Availability.RESERVED);
@@ -302,7 +310,7 @@ public class Shop implements Rentable, Searchable{
             System.out.println("Bike '" + bike.getModel() + "' has been reserved by " + user.getName() + " on " + reserveDate);
         } else if (bike.getAvailability() == Availability.RESERVED) {
             LocalDate reservationDate = bike.getReservationDate();
-            if (ChronoUnit.DAYS.between(reservationDate, LocalDate.now()) > 30) {
+            if (ChronoUnit.DAYS.between(reservationDate, LocalDate.now()) > 7) {
                 bike.setAvailability(Availability.RESERVED);
                 bike.setReservationDate(reserveDate);
                 bike.setReserver(user);
@@ -314,6 +322,12 @@ public class Shop implements Rentable, Searchable{
         } else {
             System.out.println("Sorry, the bike '" + bike.getModel() + "' is not available for reservation.");
         }
+        if(reservationSuccessful){
+            if (!firstTime){
+                TransactionDAO transactionDAO = new TransactionDAO();
+                transactionDAO.addTransaction(2, bike.getId(), user.getId(), LocalDate.now());
+            }
+        }
         return reservationSuccessful;
     }
 
@@ -323,28 +337,28 @@ public class Shop implements Rentable, Searchable{
 
         for (Transaction transaction : transactions) {
             switch (transaction.getAction()) {
+                case 0:
+                    Bike returnedBike = searchBikeById(transaction.getBikeId());
+                    if (returnedBike != null) {
+                        returnBike(returnedBike, true);
+                    } else {
+                        System.out.println("Bike not found in the shop.");
+                    }
+                    break;
                 case 1:
                     Bike borrowedBike = searchBikeById(transaction.getBikeId());
                     User borrower = searchUserById(transaction.getPersonId());
                     if (borrowedBike != null && borrower != null) {
-                        borrowBike(borrowedBike, borrower, transaction.getDate());
+                        borrowBike(borrowedBike, borrower, transaction.getDate(), true);
                     } else {
                         System.out.println("Bike or user not found in the shop.");
-                    }
-                    break;
-                case 0:
-                    Bike returnedBike = searchBikeById(transaction.getBikeId());
-                    if (returnedBike != null) {
-                        returnBike(returnedBike);
-                    } else {
-                        System.out.println("Bike not found in the shop.");
                     }
                     break;
                 case 2:
                     Bike reservedBike = searchBikeById(transaction.getBikeId());
                     User reserver = searchUserById(transaction.getPersonId());
                     if (reservedBike != null && reserver != null) {
-                        reserveBike(reservedBike, reserver, transaction.getDate());
+                        reserveBike(reservedBike, reserver, transaction.getDate(), true);
                     } else {
                         System.out.println("Bike or user not found in the shop.");
                     }

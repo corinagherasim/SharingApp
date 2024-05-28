@@ -20,7 +20,7 @@ public class AdminMenu extends JFrame{
     }
 
     private void initializeUI() {
-        setTitle("Admin Menu");
+        setTitle("Welcome, " + admin.getName() + "!");
         setSize(600, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -260,7 +260,7 @@ public class AdminMenu extends JFrame{
                 shop.removeBike(admin, bikeId);
                 JOptionPane.showMessageDialog(this, "Bike removed successfully!");
             } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Invalid input. Please enter a valid Bike ID.");
+                JOptionPane.showMessageDialog(this, "Invalid input");
             }
         }
     }
