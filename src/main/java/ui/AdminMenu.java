@@ -107,13 +107,13 @@ public class AdminMenu extends JFrame{
 
         overdueBorrowReportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-
+                generateOverdueBorrowReport();
             }
         });
 
         resetReservationsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-
+                resetReservationsReport();
             }
         });
     }
@@ -189,7 +189,6 @@ public class AdminMenu extends JFrame{
         bikeFrame.add(backButton, BorderLayout.SOUTH);
 
         bikeFrame.setVisible(true);
-
 
         shop.displayAllBikes();
     }
@@ -280,6 +279,66 @@ public class AdminMenu extends JFrame{
             JOptionPane.showMessageDialog(this, "No bike found with model: " + model);
         }
 
+    }
+
+    private void generateOverdueBorrowReport(){
+        ReportBorrow overdueReport = new ReportBorrow(shop.getSections());
+        List<String> reportsList = overdueReport.generateReport(true);
+
+        JFrame reportFrame = new JFrame("Overdue report for borrowed bikes");
+        reportFrame.setSize(550, 300);
+        reportFrame.setLocationRelativeTo(null);
+        reportFrame.setLayout(new BorderLayout());
+
+        String[] reportArray = new String[reportsList.size()];
+        reportArray = reportsList.toArray(reportArray);
+
+        JList<String> reportJList = new JList<>(reportArray);
+        JScrollPane scrollPane = new JScrollPane(reportJList);
+        reportFrame.add(scrollPane, BorderLayout.CENTER);
+
+        JButton backButton = new JButton("Back to Menu");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                reportFrame.dispose(); // Close the bike list frame
+            }
+        });
+        reportFrame.add(backButton, BorderLayout.SOUTH);
+
+        reportFrame.setVisible(true);
+    }
+
+    private void resetReservationsReport(){
+        ReportReservation overdueReport = new ReportReservation(shop.getSections());
+        List<String> reportsList = overdueReport.generateReport(false);
+
+        JFrame reportFrame = new JFrame("Overdue report for reservations:");
+        reportFrame.setSize(550, 300);
+        reportFrame.setLocationRelativeTo(null);
+        reportFrame.setLayout(new BorderLayout());
+
+        String[] reportArray = new String[reportsList.size()];
+        reportArray = reportsList.toArray(reportArray);
+
+        JList<String> reportJList = new JList<>(reportArray);
+        JScrollPane scrollPane = new JScrollPane(reportJList);
+        reportFrame.add(scrollPane, BorderLayout.CENTER);
+
+        JButton backButton = new JButton("Back to Menu");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int response = JOptionPane.showConfirmDialog(reportFrame, "Are you sure you want to reset the availability for these overdue reservations?", "Confirm Reset", JOptionPane.YES_NO_OPTION);
+                if (response == JOptionPane.YES_OPTION) {
+                    // Generate the report again with confirmation to reset the availability
+                    overdueReport.generateReport(true);
+                    JOptionPane.showMessageDialog(reportFrame, "Overdue reservations have been reset.");
+                }
+                reportFrame.dispose(); // Close the report frame
+            }
+        });
+        reportFrame.add(backButton, BorderLayout.SOUTH);
+
+        reportFrame.setVisible(true);
     }
 
 }

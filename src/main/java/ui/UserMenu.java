@@ -38,7 +38,6 @@ public class UserMenu extends JFrame{
         JButton borrowButton = new JButton("Borrow Bike");
         JButton reserveButton = new JButton("Reserve Bike");
         JButton returnButton = new JButton("Return Bike");
-        JButton changePassword = new JButton("Change password");
 
         // Set button size
         Dimension buttonSize = new Dimension(300, 50);
@@ -47,8 +46,6 @@ public class UserMenu extends JFrame{
         borrowButton.setPreferredSize(buttonSize);
         reserveButton.setPreferredSize(buttonSize);
         returnButton.setPreferredSize(buttonSize);
-        changePassword.setPreferredSize(buttonSize);
-
 
         // Add buttons to layout
         gbc.gridx = 0;
@@ -66,9 +63,6 @@ public class UserMenu extends JFrame{
 
         gbc.gridy = 4;
         add(returnButton, gbc);
-
-        gbc.gridy = 5;
-        add(changePassword, gbc);
 
         displayAllBikesButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -100,11 +94,6 @@ public class UserMenu extends JFrame{
             }
         });
 
-        changePassword.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-            }
-        });
     }
 
     private void displayAllBikes() {
