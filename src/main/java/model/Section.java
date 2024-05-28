@@ -3,7 +3,8 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-class Section {
+public class Section {
+    private BikeCategory category;
     private List<Bike> bikes;
 
     public Section() {
@@ -19,4 +20,5 @@ class Section {
     public List<Bike> getBikes() {
         return bikes;
     }
+
 }

@@ -37,6 +37,34 @@ public class Shop implements Rentable, Searchable{
 
     public Map<BikeCategory, Section> getSections() {return sections;}
 
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
+
+    public List<Admin> getAdmins() {
+        return admins;
+    }
+
+    public void setAdmins(List<Admin> admins) {
+        this.admins = admins;
+    }
+
+    public List<Person> getPeople() {
+        return people;
+    }
+
+    public void setPeople(List<Person> people) {
+        this.people = people;
+    }
+
+    public List<Bike> getBikes() {
+        return bikes;
+    }
+
     public void addBikesFromDatabase() {
         // Fetch bikes from the database using BikeDAO
         BikeDAO bikeDAO = new BikeDAO();
@@ -71,11 +99,17 @@ public class Shop implements Rentable, Searchable{
 
     public void addPersonFromDB(Person person) {
         if (person instanceof Admin) {
-            admins.add((Admin) person);
+            if (!admins.contains(person)) {
+                admins.add((Admin) person);
+            }
         } else if (person instanceof User) {
-            users.add((User) person);
+            if (!users.contains(person)) {
+                users.add((User) person);
+            }
         }
-        people.add(person); // Add to the general list of people
+        if (!people.contains(person)) {
+            people.add(person);
+        }
     }
 
     public void addPerson(Person person) {
@@ -125,12 +159,14 @@ public class Shop implements Rentable, Searchable{
             boolean removed = false;
             while (iterator.hasNext()) {
                 Bike bike = iterator.next();
-                if (bike.getId() == bikeId) {
+                if (bike.getId() == bikeId && bike.getAvailability() == Availability.AVAILABLE) {
                     iterator.remove();
                     removed = true;
                     for (Section section : sections.values()) {
                         if (section.getBikes().contains(bike)) {
                             section.getBikes().remove(bike);
+                            BikeDAO bikedao = new BikeDAO();
+                            bikedao.removeBikeFromDB(bikeId);
                             break;
                         }
                     }
@@ -234,33 +270,6 @@ public class Shop implements Rentable, Searchable{
             System.out.println("Bike '" + bike.getModel() + "' is not available for borrowing by " + borrower.getName() + ".");
         }
         return borrowedSuccessfully;
-    }
-
-    // Check bike availability
-    public void checkAvailability(Bike bike) {
-        boolean found = false;
-        for (Bike b : bikes) {
-            if (b.equals(bike)) {
-                found = true;
-                if (b.getAvailability() == Availability.AVAILABLE) {
-                    System.out.println("Bike '" + bike.getModel() + "' is available.");
-                } else if (b.getAvailability() == Availability.RESERVED) {
-                    LocalDate reservationDate = b.getReservationDate();
-                    if (ChronoUnit.DAYS.between(reservationDate, LocalDate.now()) > 30) {
-                        b.setAvailability(Availability.AVAILABLE);
-                        System.out.println("Bike '" + bike.getModel() + "' is available now.");
-                    } else {
-                        System.out.println("Bike '" + bike.getModel() + "' is not available. Status: " + b.getAvailability());
-                    }
-                } else {
-                    System.out.println("Bike '" + bike.getModel() + "' is not available. Status: " + b.getAvailability());
-                }
-                break;
-            }
-        }
-        if (!found) {
-            System.out.println("Bike not found in the shop.");
-        }
     }
 
     @Override
@@ -380,10 +389,10 @@ public class Shop implements Rentable, Searchable{
         return foundUser;
     }
 
-    public Admin searchAdminByNamePassword (String name, String password){
+    public Admin searchAdminByEmailPassword (String email, String password){
         Admin foundAdmin = null;
         for (Admin admin : admins) {
-            if (admin.getName().equals(name) && admin.getPassword().equals(password)) {
+            if (admin.getEmail().equals(email) && admin.getPassword().equals(password)) {
                 foundAdmin = admin;
             }
         }
@@ -396,6 +405,64 @@ public class Shop implements Rentable, Searchable{
         } else{
             return true;
         }
+    }
+
+    public User searchUserByEmailPassword (String email, String password){
+        User foundUser = null;
+        for (User user : users) {
+            if (user.getEmail().equals(email) && user.getPassword().equals(password)) {
+                foundUser = user;
+            }
+        }
+        return foundUser;
+    }
+
+    public boolean isUserFound(User foundUser){
+        if (foundUser == null){
+            return false;
+        } else{
+            return true;
+        }
+    }
+
+    public int getNextPersonId() {
+        int maxId = 0;
+        for (Person person : people) {
+            if (person.getId() > maxId) {
+                maxId = person.getId();
+            }
+        }
+        return maxId + 1;
+    }
+
+    public int getNextBikeId() {
+        int maxId = 0;
+        for (Bike bike : bikes) {
+            if (bike.getId() > maxId) {
+                maxId = bike.getId();
+            }
+        }
+        return maxId + 1;
+    }
+
+    public boolean searchAdminByEmail (String email){
+        boolean found = false;
+        for (Admin admin : admins) {
+            if (admin.getEmail().equals(email)) {
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    public boolean searchUserByEmail (String email){
+        boolean found = false;
+        for (User user : users) {
+            if (user.getEmail().equals(email)) {
+                found = true;
+            }
+        }
+        return found;
     }
 }
 
