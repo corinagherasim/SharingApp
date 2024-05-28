@@ -59,7 +59,7 @@ public class Shop implements Rentable, Searchable{
     }
 
     public void addPeopleFromDatabase() {
-        // Fetch bikes from the database using BikeDAO
+        // Fetch people from the database using PersonDAO
         PersonDAO personDAO = new PersonDAO();
         List<Person> people = personDAO.getPeopleFromDB();
 
@@ -378,6 +378,24 @@ public class Shop implements Rentable, Searchable{
             }
         }
         return foundUser;
+    }
+
+    public Admin searchAdminByNamePassword (String name, String password){
+        Admin foundAdmin = null;
+        for (Admin admin : admins) {
+            if (admin.getName().equals(name) && admin.getPassword().equals(password)) {
+                foundAdmin = admin;
+            }
+        }
+        return foundAdmin;
+    }
+
+    public boolean isAdminFound(Admin foundAdmin){
+        if (foundAdmin == null){
+            return false;
+        } else{
+            return true;
+        }
     }
 }
 
