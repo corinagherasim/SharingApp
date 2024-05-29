@@ -1,6 +1,7 @@
 package ui;
 
 import model.*;
+import dao.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,6 +39,7 @@ public class AdminMenu extends JFrame{
         JButton searchBikeByModelButton = new JButton("Search Bike By Model");
         JButton overdueBorrowReportButton = new JButton("Generate Overdue Borrow Report");
         JButton resetReservationsButton = new JButton("Reset Overdue Reservations");
+        JButton historyButton = new JButton("History");
 
         // Set button size
         Dimension buttonSize = new Dimension(300, 50);
@@ -48,6 +50,7 @@ public class AdminMenu extends JFrame{
         searchBikeByModelButton.setPreferredSize(buttonSize);
         overdueBorrowReportButton.setPreferredSize(buttonSize);
         resetReservationsButton.setPreferredSize(buttonSize);
+        historyButton.setPreferredSize(buttonSize);
 
         // Add buttons to layout
         gbc.gridx = 0;
@@ -71,6 +74,9 @@ public class AdminMenu extends JFrame{
 
         gbc.gridy = 6;
         add(resetReservationsButton, gbc);
+
+        gbc.gridy = 7;
+        add(historyButton, gbc);
 
         // Action listeners for buttons
         displayAllPeopleButton.addActionListener(new ActionListener() {
@@ -114,6 +120,12 @@ public class AdminMenu extends JFrame{
         resetReservationsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 resetReservationsReport();
+            }
+        });
+
+        historyButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                history();
             }
         });
     }
@@ -163,7 +175,7 @@ public class AdminMenu extends JFrame{
                 if (bike.getAvailability() == Availability.BORROWED) {
                     bikesList.add("Borrowed by: " + bike.getBorrower().getName() + ", Borrowed Date: " + bike.getBorrowDate());
                 } else if (bike.getAvailability() == Availability.RESERVED) {
-                    bikesList.add(", Reserved by: " + bike.getReserver().getName() + ", Reservation Date: " + bike.getReservationDate());
+                    bikesList.add("Reserved by: " + bike.getReserver().getName() + ", Reservation Date: " + bike.getReservationDate());
                 }
             }
         }
@@ -339,6 +351,34 @@ public class AdminMenu extends JFrame{
         reportFrame.add(backButton, BorderLayout.SOUTH);
 
         reportFrame.setVisible(true);
+    }
+
+    private void history(){
+        TransactionDAO transactionDAO = new TransactionDAO();
+        List<String> transactions = transactionDAO.generateHistory();
+
+        JFrame reportFrame = new JFrame("History");
+        reportFrame.setSize(550, 300);
+        reportFrame.setLocationRelativeTo(null);
+        reportFrame.setLayout(new BorderLayout());
+
+        String[] reportArray = new String[transactions.size()];
+        reportArray = transactions.toArray(reportArray);
+
+        JList<String> reportJList = new JList<>(reportArray);
+        JScrollPane scrollPane = new JScrollPane(reportJList);
+        reportFrame.add(scrollPane, BorderLayout.CENTER);
+
+        JButton backButton = new JButton("Back to Menu");
+        backButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                reportFrame.dispose(); // Close the bike list frame
+            }
+        });
+        reportFrame.add(backButton, BorderLayout.SOUTH);
+
+        reportFrame.setVisible(true);
+
     }
 
 }
