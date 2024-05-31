@@ -2,6 +2,8 @@ package model;
 
 import dao.BikeDAO;
 import dao.PersonDAO;
+import exceptions.BikeNotFoundException;
+import exceptions.UserNotFoundException;
 import ui.AdminMenu;
 import ui.UserMenu;
 
@@ -51,7 +53,11 @@ public class Main extends JFrame {
 
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                showLoginDialog();
+                try {
+                    showLoginDialog();
+                } catch (UserNotFoundException ex) {
+                    System.out.println("Error: " + ex.getMessage());
+                }
             }
         });
 
@@ -62,7 +68,7 @@ public class Main extends JFrame {
         });
     }
 
-    private void showLoginDialog() {
+    private void showLoginDialog() throws UserNotFoundException {
         JTextField emailField = new JTextField(10);
         JPasswordField passwordField = new JPasswordField(10);
 

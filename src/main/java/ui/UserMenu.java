@@ -1,5 +1,6 @@
 package ui;
 
+import exceptions.BikeNotFoundException;
 import model.*;
 
 import javax.swing.*;
@@ -72,7 +73,11 @@ public class UserMenu extends JFrame{
 
         searchBikeByModelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                searchBikeByModel();
+                try {
+                    searchBikeByModel();
+                } catch (BikeNotFoundException ex) {
+                    System.out.println("Error: " + ex.getMessage());
+                }
             }
         });
 
@@ -132,7 +137,7 @@ public class UserMenu extends JFrame{
         shop.displayAllBikes();
     }
 
-    private void searchBikeByModel(){
+    private void searchBikeByModel() throws BikeNotFoundException {
         String model = JOptionPane.showInputDialog(this, "Search Bike Model:");
         Bike bike = shop.searchBikeByModel(model);
         if (bike != null) {

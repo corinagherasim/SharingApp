@@ -382,12 +382,17 @@ public class Shop implements Rentable, Searchable{
     }
 
     @Override
-    public Bike searchBikeByModel(String model){
+    public Bike searchBikeByModel(String model) throws BikeNotFoundException{
         Bike foundBike = null;
+        boolean confirm = false;
         for (Bike bike : bikes) {
             if (bike.getModel().equalsIgnoreCase(model)) {
                 foundBike = bike;
+                confirm = true;
             }
+        }
+        if (!confirm) {
+            throw new BikeNotFoundException("Bike with model '" + model + "' not found in the shop.");
         }
         return foundBike;
     }
@@ -403,6 +408,7 @@ public class Shop implements Rentable, Searchable{
         return foundUser;
     }
 
+    @Override
     public Admin searchAdminByEmailPassword (String email, String password){
         Admin foundAdmin = null;
         for (Admin admin : admins) {
@@ -413,14 +419,7 @@ public class Shop implements Rentable, Searchable{
         return foundAdmin;
     }
 
-    public boolean isAdminFound(Admin foundAdmin){
-        if (foundAdmin == null){
-            return false;
-        } else{
-            return true;
-        }
-    }
-
+    @Override
     public User searchUserByEmailPassword (String email, String password){
         User foundUser = null;
         for (User user : users) {
@@ -429,14 +428,6 @@ public class Shop implements Rentable, Searchable{
             }
         }
         return foundUser;
-    }
-
-    public boolean isUserFound(User foundUser){
-        if (foundUser == null){
-            return false;
-        } else{
-            return true;
-        }
     }
 
     public int getNextPersonId() {
@@ -459,6 +450,7 @@ public class Shop implements Rentable, Searchable{
         return maxId + 1;
     }
 
+    @Override
     public boolean searchAdminByEmail (String email){
         boolean found = false;
         for (Admin admin : admins) {
@@ -469,6 +461,7 @@ public class Shop implements Rentable, Searchable{
         return found;
     }
 
+    @Override
     public boolean searchUserByEmail (String email){
         boolean found = false;
         for (User user : users) {
