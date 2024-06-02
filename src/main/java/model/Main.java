@@ -26,8 +26,8 @@ public class Main extends JFrame {
     }
 
     private void initializeUI() {
-        setTitle("Bike Shop Management");
-        setSize(800, 800);
+        setTitle("Bike Shop");
+        setSize(500, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
