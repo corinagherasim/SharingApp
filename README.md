@@ -58,7 +58,10 @@ Service classes in the CRUD package perform operations for creating, reading, up
 ## Database
 The application uses MySQL. The database schema is designed to efficiently store and manage data related to bike, people and history of bike rentals.
 
+<image src = "https://github.com/corinagherasim/SharingApp/assets/94368761/57f85569-b8af-48bf-b288-5bf53eee3d21">
+
 ## Design Patterns
+
 The application employs several design patterns to ensure code quality and maintainability:
 
 - **Singleton**: Ensures that only one instance of the DBConnection class exists, providing a global point of access to the database and only one instance of the shop.
